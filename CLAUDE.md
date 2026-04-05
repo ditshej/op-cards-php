@@ -19,6 +19,13 @@ src/
 └── Exceptions/                # API exceptions
 ```
 
+## PHP Standards
+
+- Constructor property promotion over manual assignment
+- Typed properties; PHPDoc only where types are insufficient
+- Early returns, happy path last, never use `else`
+- Self-documenting code over comments
+
 ## OpenSpec Workflow
 
 Every feature starts with `/opsx:propose` — never implement directly.
@@ -27,8 +34,22 @@ Every feature starts with `/opsx:propose` — never implement directly.
 
 Run tests: `composer test`
 
-Pre-commit hook blocks commits when tests fail. Activate once with:
+- Write tests FIRST, then implement (TDD)
+- Every class in `src/` needs a corresponding test in `tests/`
+- Pre-commit hook blocks commits when tests fail
+
+Activate hook once with:
 
 ```bash
 git config core.hooksPath .githooks
 ```
+
+## Pint (Code Formatter)
+
+Run before finalizing a feature:
+
+```bash
+vendor/bin/pint --dirty
+```
+
+Or via composer: `composer lint`
