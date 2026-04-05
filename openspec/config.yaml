@@ -1,0 +1,30 @@
+schema: spec-driven
+
+context: |
+  ## Project
+  op-cards-php — PHP SDK for the op-cards.ditshej.ch API.
+  Framework-agnostic library with optional Laravel integration in src/Laravel/.
+
+  ## Tech Stack
+  PHP 8.2+, Guzzle 7, Pest 4, Pint
+
+  ## Coding Standards
+  - Constructor property promotion
+  - Typed properties, no docblocks where types suffice
+  - Happy path last, early returns, no else
+  - Self-documenting code over comments
+  - No framework dependencies in core (src/ root)
+
+  ## Development Approach
+  - TDD: always write tests FIRST, then implement
+  - Conventional Commits
+  - Framework-agnostic core — no Laravel, no Artisan, no Eloquent
+
+rules:
+  tasks:
+    - Break tasks into chunks of max 2 hours
+    - Tests must be listed BEFORE implementation tasks
+    - Maximum 15 tasks per change — split into smaller changes if more
+  proposal:
+    - Always include a "Non-goals" section
+    - Keep scope small — one concern per change, not an entire feature layer
