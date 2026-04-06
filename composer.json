@@ -14,6 +14,9 @@
         "laravel/pint": "^1.29",
         "pestphp/pest": "^4.0"
     },
+    "suggest": {
+        "illuminate/support": "Required to use the Laravel ServiceProvider and Facade (^10.0|^11.0|^12.0)"
+    },
     "autoload": {
         "psr-4": {
             "Ditshej\\OpCards\\": "src/"
@@ -37,6 +40,16 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ditshej\\OpCards\\Laravel\\OpCardsServiceProvider"
+            ],
+            "aliases": {
+                "OpCards": "Ditshej\\OpCards\\Laravel\\Facades\\OpCards"
+            }
         }
     },
     "minimum-stability": "stable",
