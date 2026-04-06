@@ -84,7 +84,24 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 
 ---
 
-### Step 3: Review (parallel subagents)
+### Step 3: Verify
+
+```bash
+openspec instructions verify --change "<change-name>" --json
+```
+
+Run `/opsx:verify` against the completed implementation. Checks three dimensions:
+
+- **Completeness** — all tasks done, all requirements have corresponding code, all scenarios covered
+- **Correctness** — implementation matches spec intent, edge cases handled, error states match spec
+- **Coherence** — design decisions reflected in code structure, naming conventions consistent
+
+Fix all **CRITICAL** findings before proceeding. Document **WARNING** findings.
+Verify does not block the next steps, but all criticals must be resolved.
+
+---
+
+### Step 4: Review (parallel subagents)
 
 Spawn **two review agents in parallel** using the Agent tool.
 
@@ -129,7 +146,7 @@ Skip this commit entirely if the review produced zero changes.
 
 ---
 
-### Step 4: Archive
+### Step 5: Archive
 
 ```bash
 openspec archive <change-name> --yes
@@ -150,7 +167,7 @@ Note: `git add -A openspec/` is required because the archive moves files
 
 ---
 
-### Step 5: Merge to main
+### Step 6: Merge to main
 
 Rebase the branch onto main first to keep a linear history (no merge commits):
 
@@ -166,7 +183,7 @@ No squash. Full history stays on main.
 
 ---
 
-### Step 6: Report
+### Step 7: Report
 
 After merging, output a summary block:
 
