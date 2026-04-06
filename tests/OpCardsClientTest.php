@@ -5,6 +5,7 @@ use Ditshej\OpCards\Exceptions\AuthenticationException;
 use Ditshej\OpCards\Exceptions\NotFoundException;
 use Ditshej\OpCards\Exceptions\RateLimitException;
 use Ditshej\OpCards\OpCardsClient;
+use Ditshej\OpCards\Resources\CardResource;
 use Ditshej\OpCards\Resources\PackResource;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -141,4 +142,63 @@ it('pack() propagates NotFoundException on 404', function () {
     $client = makeClient('token', [new Response(404)]);
 
     expect(fn () => $client->pack('UNKNOWN'))->toThrow(NotFoundException::class);
+});
+
+// --- cards endpoints ---
+
+it('cards() returns data as CardResource[] and meta', function () {
+    $meta = ['current_page' => 1, 'last_page' => 2, 'per_page' => 25, 'total' => 50];
+    $body = json_encode([
+        'data' => [[
+            'id' => 'OP01-001', 'pack_id' => 'OP01', 'card_set' => 'OP-01',
+            'name' => 'Monkey D. Luffy', 'rarity' => 'L', 'category' => 'Character',
+            'colors' => ['Red'], 'attributes' => ['Strike'], 'types' => ['Straw Hat Crew'],
+        ]],
+        'meta' => $meta,
+    ]);
+    $client = makeClient('token', [new Response(200, [], $body)]);
+
+    $result = $client->cards();
+
+    expect($result['data'])->toHaveCount(1)
+        ->and($result['data'][0])->toBeInstanceOf(CardResource::class)
+        ->and($result['data'][0]->id)->toBe('OP01-001')
+        ->and($result['meta'])->toBe($meta);
+});
+
+it('cards() returns empty data array when API returns none', function () {
+    $body = json_encode(['data' => [], 'meta' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 0]]);
+    $client = makeClient('token', [new Response(200, [], $body)]);
+
+    expect($client->cards()['data'])->toBe([]);
+});
+
+it('cards() forwards query parameters to the request', function () {
+    $history = [];
+    $body = json_encode(['data' => [], 'meta' => []]);
+    $client = makeClient('token', [new Response(200, [], $body)], $history);
+
+    $client->cards(['pack_id' => 'OP01']);
+
+    expect((string) $history[0]['request']->getUri())->toContain('pack_id=OP01');
+});
+
+it('card() returns a single CardResource', function () {
+    $body = json_encode(['data' => [
+        'id' => 'OP01-001', 'pack_id' => 'OP01', 'card_set' => 'OP-01',
+        'name' => 'Monkey D. Luffy', 'rarity' => 'L', 'category' => 'Character',
+        'colors' => ['Red'], 'attributes' => ['Strike'], 'types' => ['Straw Hat Crew'],
+    ]]);
+    $client = makeClient('token', [new Response(200, [], $body)]);
+
+    $card = $client->card('OP01-001');
+
+    expect($card)->toBeInstanceOf(CardResource::class)
+        ->and($card->id)->toBe('OP01-001');
+});
+
+it('card() propagates NotFoundException on 404', function () {
+    $client = makeClient('token', [new Response(404)]);
+
+    expect(fn () => $client->card('UNKNOWN'))->toThrow(NotFoundException::class);
 });
