@@ -2,20 +2,25 @@
 
 use Ditshej\OpCards\Laravel\OpCardsServiceProvider;
 use Ditshej\OpCards\OpCardsClient;
+use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Container\Container;
 
-beforeEach(function () {
-    putenv('OPCARDS_TOKEN=test-token');
-    putenv('OPCARDS_BASE_URI=https://api.example.com/');
-});
+function makeContainer(array $config = []): Container
+{
+    $container = new Container;
+    $configRepo = new ConfigRepository([
+        'opcards' => array_merge([
+            'token' => 'test-token',
+            'base_uri' => 'https://api.example.com/',
+        ], $config['opcards'] ?? []),
+    ]);
+    $container->instance('config', $configRepo);
 
-afterEach(function () {
-    putenv('OPCARDS_TOKEN');
-    putenv('OPCARDS_BASE_URI');
-});
+    return $container;
+}
 
 it('binds OpCardsClient as a singleton', function () {
-    $container = new Container;
+    $container = makeContainer();
     $provider = new OpCardsServiceProvider($container);
     $provider->register();
 
@@ -24,10 +29,8 @@ it('binds OpCardsClient as a singleton', function () {
     expect($client)->toBeInstanceOf(OpCardsClient::class);
 });
 
-it('reads OPCARDS_BASE_URI from the environment', function () {
-    putenv('OPCARDS_BASE_URI=https://my-instance.example.com/api/');
-
-    $container = new Container;
+it('reads opcards.base_uri from Laravel config', function () {
+    $container = makeContainer(['opcards' => ['token' => 'test-token', 'base_uri' => 'https://my-instance.example.com/api/']]);
     $provider = new OpCardsServiceProvider($container);
     $provider->register();
 
@@ -38,7 +41,7 @@ it('reads OPCARDS_BASE_URI from the environment', function () {
 });
 
 it('returns the same instance on repeated resolution (singleton)', function () {
-    $container = new Container;
+    $container = makeContainer();
     $provider = new OpCardsServiceProvider($container);
     $provider->register();
 
@@ -48,12 +51,20 @@ it('returns the same instance on repeated resolution (singleton)', function () {
     expect($first)->toBe($second);
 });
 
-it('throws when OPCARDS_BASE_URI is not set', function () {
-    putenv('OPCARDS_BASE_URI');
-
-    $container = new Container;
+it('throws InvalidArgumentException when opcards.token is blank', function () {
+    $container = makeContainer(['opcards' => ['token' => '', 'base_uri' => 'https://api.example.com/']]);
     $provider = new OpCardsServiceProvider($container);
     $provider->register();
 
-    expect(fn () => $container->make(OpCardsClient::class))->toThrow(InvalidArgumentException::class);
+    expect(fn () => $container->make(OpCardsClient::class))
+        ->toThrow(InvalidArgumentException::class);
+});
+
+it('throws InvalidArgumentException when opcards.token is null', function () {
+    $container = makeContainer(['opcards' => ['token' => null, 'base_uri' => 'https://api.example.com/']]);
+    $provider = new OpCardsServiceProvider($container);
+    $provider->register();
+
+    expect(fn () => $container->make(OpCardsClient::class))
+        ->toThrow(InvalidArgumentException::class);
 });
