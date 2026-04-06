@@ -4,6 +4,16 @@ use Ditshej\OpCards\Laravel\OpCardsServiceProvider;
 use Ditshej\OpCards\OpCardsClient;
 use Illuminate\Container\Container;
 
+beforeEach(function () {
+    putenv('OPCARDS_TOKEN=test-token');
+    putenv('OPCARDS_BASE_URI=https://api.example.com/');
+});
+
+afterEach(function () {
+    putenv('OPCARDS_TOKEN');
+    putenv('OPCARDS_BASE_URI');
+});
+
 it('binds OpCardsClient as a singleton', function () {
     $container = new Container;
     $provider = new OpCardsServiceProvider($container);
@@ -22,26 +32,9 @@ it('reads OPCARDS_BASE_URI from the environment', function () {
     $provider->register();
 
     $client = $container->make(OpCardsClient::class);
-
     $reflection = new ReflectionProperty($client, 'baseUri');
 
     expect($reflection->getValue($client))->toBe('https://my-instance.example.com/api/');
-
-    putenv('OPCARDS_BASE_URI');
-});
-
-it('falls back to the default base URI when OPCARDS_BASE_URI is not set', function () {
-    putenv('OPCARDS_BASE_URI');
-
-    $container = new Container;
-    $provider = new OpCardsServiceProvider($container);
-    $provider->register();
-
-    $client = $container->make(OpCardsClient::class);
-
-    $reflection = new ReflectionProperty($client, 'baseUri');
-
-    expect($reflection->getValue($client))->toBe('https://op-cards.ditshej.ch/api/');
 });
 
 it('returns the same instance on repeated resolution (singleton)', function () {
@@ -53,4 +46,14 @@ it('returns the same instance on repeated resolution (singleton)', function () {
     $second = $container->make(OpCardsClient::class);
 
     expect($first)->toBe($second);
+});
+
+it('throws when OPCARDS_BASE_URI is not set', function () {
+    putenv('OPCARDS_BASE_URI');
+
+    $container = new Container;
+    $provider = new OpCardsServiceProvider($container);
+    $provider->register();
+
+    expect(fn () => $container->make(OpCardsClient::class))->toThrow(InvalidArgumentException::class);
 });
