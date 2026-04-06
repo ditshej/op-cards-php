@@ -198,6 +198,16 @@ it('cards() returns empty data array when API returns none', function () {
     expect($client->cards()['data'])->toBe([]);
 });
 
+it('cards() sends no query string when called without a filter', function () {
+    $history = [];
+    $body = json_encode(['data' => [], 'meta' => []]);
+    $client = makeClient('token', [new Response(200, [], $body)], $history);
+
+    $client->cards();
+
+    expect((string) $history[0]['request']->getUri())->not->toContain('?');
+});
+
 it('cards() forwards CardFilter query parameters to the request', function () {
     $history = [];
     $body = json_encode(['data' => [], 'meta' => []]);
