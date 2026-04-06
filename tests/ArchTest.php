@@ -14,9 +14,7 @@ test('all source classes have a corresponding test file', function () {
     }
 
     if (empty($sourceFiles)) {
-        $this->markTestSkipped('No source classes to check.');
-
-        return;
+        test()->skip('No source classes to check.');
     }
 
     foreach ($sourceFiles as $sourceFile) {
