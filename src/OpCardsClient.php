@@ -19,11 +19,10 @@ class OpCardsClient
 
     public function __construct(
         private readonly string $token,
+        private readonly string $baseUri = 'https://op-cards.ditshej.ch/api/',
         ?ClientInterface $http = null,
     ) {
-        $this->http = $http ?? new Client([
-            'base_uri' => 'https://op-cards.ditshej.ch/api/',
-        ]);
+        $this->http = $http ?? new Client;
     }
 
     /** @return PackResource[] */
@@ -65,7 +64,8 @@ class OpCardsClient
         try {
             $options['headers']['Authorization'] = "Bearer {$this->token}";
 
-            $response = $this->http->request($method, $path, $options);
+            $uri = rtrim($this->baseUri, '/').'/'.ltrim($path, '/');
+            $response = $this->http->request($method, $uri, $options);
 
             return json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR);
         } catch (BadResponseException $e) {

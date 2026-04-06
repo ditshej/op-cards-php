@@ -16,6 +16,24 @@ test('OpCardsClient can be instantiated with a token', function () {
     expect($client)->toBeInstanceOf(OpCardsClient::class);
 });
 
+test('custom base URI is used for outbound requests', function () {
+    $history = [];
+    $client = makeClient('token', [new Response(200, [], json_encode(['data' => []]))], $history, 'https://custom.example.com/api/');
+
+    $client->packs();
+
+    expect((string) $history[0]['request']->getUri())->toContain('custom.example.com');
+});
+
+test('default base URI is used when none is given', function () {
+    $history = [];
+    $client = makeClient('token', [new Response(200, [], json_encode(['data' => []]))], $history);
+
+    $client->packs();
+
+    expect((string) $history[0]['request']->getUri())->toContain('op-cards.ditshej.ch');
+});
+
 test('custom ClientInterface is used when injected', function () {
     $history = [];
     $client = makeClient('my-token', [new Response(200, [], json_encode(['data' => []]))], $history);
