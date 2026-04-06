@@ -62,3 +62,15 @@ it('throws InvalidArgumentException when opcards.token is blank or null', functi
     'empty string' => [''],
     'null' => [null],
 ]);
+
+it('throws InvalidArgumentException when opcards.base_uri is blank or null', function (mixed $baseUri) {
+    $container = makeContainer(['opcards' => ['token' => 'test-token', 'base_uri' => $baseUri]]);
+    $provider = new OpCardsServiceProvider($container);
+    $provider->register();
+
+    expect(fn () => $container->make(OpCardsClient::class))
+        ->toThrow(InvalidArgumentException::class);
+})->with([
+    'empty string' => [''],
+    'null' => [null],
+]);

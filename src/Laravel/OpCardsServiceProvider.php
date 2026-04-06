@@ -29,9 +29,15 @@ class OpCardsServiceProvider extends ServiceProvider
                 throw new InvalidArgumentException('opcards.token config value must not be blank.');
             }
 
+            $baseUri = (string) ($this->app['config']->get('opcards.base_uri') ?? '');
+
+            if ($baseUri === '') {
+                throw new InvalidArgumentException('opcards.base_uri config value must not be blank.');
+            }
+
             return new OpCardsClient(
                 $token,
-                (string) ($this->app['config']->get('opcards.base_uri') ?? ''),
+                $baseUri,
             );
         });
     }
