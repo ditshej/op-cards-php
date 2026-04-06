@@ -199,6 +199,50 @@ Tests: <N> passed
 
 ---
 
+## Two Modes: Interactive vs. Autonomous
+
+**Interactive mode** (normal conversation): CHECKPOINTs are active — the agent pauses and waits for user OK at each gate.
+
+| After | Agent presents | User decides |
+|-------|----------------|--------------|
+| **explore** | Investigation findings — is the scope clear? | Proceed to propose? |
+| **propose** | Proposal summary (WHY, WHAT, non-goals) | Proceed to implement? |
+| **ai-review** | Change summary + manual review instructions | Proceed to archive? |
+
+**Autonomous mode** (AGENT_MISSION): Per-change CHECKPOINTs are skipped. The agent works through the entire roadmap without pausing. Instead, a mandatory stop is produced at the end of the session.
+
+### Mandatory Stop after Autonomous Session
+
+After completing all changes (or at the end of the session), the agent must:
+
+1. **Stop** — do not start another change
+2. **Present a full session summary:**
+
+```
+## Session Summary
+
+| Change        | Branch (deleted) | Commits               | Tests     |
+|---------------|------------------|-----------------------|-----------|
+| change-name   | feat/change-name | docs · feat · docs    | 12 passed |
+| ...           | ...              | ...                   | ...       |
+
+## Review
+- All changes merged to main
+- Open PR: <url> (if applicable)
+- Review with: git log --oneline / git diff v<prev>..HEAD
+- Run tests: composer test
+```
+
+3. **Open a GitHub PR (optional)** — if the project has a remote and a meaningful batch of changes warrants it:
+
+```bash
+gh pr create --title "<summary>" --body "<session summary>"
+```
+
+This is what enables long autonomous runs: the human reviews at the end (or on the PR), not during.
+
+---
+
 ## Change Sequence
 
 Check `git log --oneline` first — if some changes are already merged to main, skip them.
