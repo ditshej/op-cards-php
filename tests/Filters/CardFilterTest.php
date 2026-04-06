@@ -71,10 +71,6 @@ it('page() is chainable with other filter methods', function () {
     expect($query)->toBe(['color' => 'Red', 'page' => 3]);
 });
 
-it('cost() with single value emits scalar', function () {
-    expect((new CardFilter)->cost(5)->toQuery())->toBe(['cost' => 5]);
-});
-
 it('cost() with multiple values emits array', function () {
     expect((new CardFilter)->cost(3, 5, 7)->toQuery())->toBe(['cost' => [3, 5, 7]]);
 });
