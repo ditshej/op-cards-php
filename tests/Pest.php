@@ -25,15 +25,19 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 
-function makeClient(string $token, array $responses, array &$history = []): OpCardsClient
-{
+function makeClient(
+    string $token,
+    array $responses,
+    array &$history = [],
+    string $baseUri = 'https://op-cards.ditshej.ch/api/',
+): OpCardsClient {
     $mock = new MockHandler($responses);
     $stack = HandlerStack::create($mock);
     $stack->push(Middleware::history($history));
 
     $guzzle = new Client(['handler' => $stack]);
 
-    return new OpCardsClient($token, $guzzle);
+    return new OpCardsClient($token, $baseUri, $guzzle);
 }
 
 function makeCard(array $overrides = []): CardResource
