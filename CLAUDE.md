@@ -28,7 +28,42 @@ src/
 
 ## OpenSpec Workflow
 
-Every feature starts with `/opsx:propose` — never implement directly.
+**Rule:** Every new feature or major change ALWAYS starts with `/opsx:propose` — never implement directly.
+
+Every OpenSpec change gets its own feature branch. No squash merge — the full history stays on `main`.
+
+### Workflow per Change
+
+```bash
+# 1. Create branch
+git checkout -b feat/<change-name>
+
+# 2. Propose the change (generates proposal, specs, design, tasks)
+/opsx:propose
+# → Commit: "docs(<change-name>): add proposal, design and tasks"
+
+# 3. Implement (TDD — tests first)
+/opsx:apply
+# → Commit(s): "feat(<change-name>): ...", "fix(<change-name>): ...", etc.
+
+# 4. Verify — checks Completeness, Correctness, Coherence against specs
+/opsx:verify
+# → Fix all CRITICALs before proceeding
+
+# 5. Code Review
+# Run php-library-reviewer agent, fix findings
+# → Commit: "refactor(<change-name>): apply review feedback"
+
+# 6. Archive the change
+/opsx:archive
+# → Commit: "docs(<change-name>): archive change"
+
+# 7. Rebase onto main, then merge (no squash)
+git rebase main
+git checkout main && git merge feat/<change-name>
+```
+
+Use the change name as the commit scope for every commit on that branch.
 
 ## Testing
 
