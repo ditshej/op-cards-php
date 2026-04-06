@@ -30,7 +30,7 @@ class OpCardsClient
 
             $response = $this->http->request($method, $path, $options);
 
-            return json_decode((string) $response->getBody(), true);
+            return json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR);
         } catch (BadResponseException $e) {
             $status = $e->getResponse()->getStatusCode();
 
