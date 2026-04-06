@@ -6,6 +6,7 @@ use Ditshej\OpCards\Exceptions\ApiException;
 use Ditshej\OpCards\Exceptions\AuthenticationException;
 use Ditshej\OpCards\Exceptions\NotFoundException;
 use Ditshej\OpCards\Exceptions\RateLimitException;
+use Ditshej\OpCards\Resources\CardResource;
 use Ditshej\OpCards\Resources\PackResource;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
@@ -37,6 +38,25 @@ class OpCardsClient
         $response = $this->request('GET', "packs/{$id}");
 
         return PackResource::fromArray($response['data']);
+    }
+
+    /** @return array{data: CardResource[], meta: array} */
+    public function cards(?array $query = null): array
+    {
+        $options = $query ? ['query' => $query] : [];
+        $response = $this->request('GET', 'cards', $options);
+
+        return [
+            'data' => array_map(CardResource::fromArray(...), $response['data']),
+            'meta' => $response['meta'],
+        ];
+    }
+
+    public function card(string $id): CardResource
+    {
+        $response = $this->request('GET', "cards/{$id}");
+
+        return CardResource::fromArray($response['data']);
     }
 
     public function request(string $method, string $path, array $options = []): array
