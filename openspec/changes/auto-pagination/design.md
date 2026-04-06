@@ -9,7 +9,7 @@ The method must work with an optional caller-supplied `CardFilter`. When a filte
 **Goals:**
 - Provide a single method that returns all cards matching an optional filter as a flat `CardResource[]`
 - Reuse `cards()` entirely — no direct HTTP calls inside `allCards()`
-- Remain stateless: the original `$filter` passed by the caller is not mutated
+- Remain stateless: no direct HTTP calls inside `allCards()` — delegate entirely to `cards()`
 
 **Non-Goals:**
 - Lazy/streaming iteration
