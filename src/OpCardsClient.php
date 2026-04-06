@@ -59,7 +59,7 @@ class OpCardsClient
         return CardResource::fromArray($response['data']);
     }
 
-    public function request(string $method, string $path, array $options = []): array
+    private function request(string $method, string $path, array $options = []): array
     {
         try {
             $options['headers']['Authorization'] = "Bearer {$this->token}";
