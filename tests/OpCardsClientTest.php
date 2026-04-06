@@ -36,9 +36,9 @@ test('OpCardsClient can be instantiated with a token', function () {
 
 test('custom ClientInterface is used when injected', function () {
     $history = [];
-    $client = makeClient('my-token', [new Response(200, [], '[]')], $history);
+    $client = makeClient('my-token', [new Response(200, [], json_encode(['data' => []]))], $history);
 
-    $client->request('GET', '/test');
+    $client->packs();
 
     expect($history)->toHaveCount(1);
 });
@@ -47,27 +47,27 @@ test('custom ClientInterface is used when injected', function () {
 
 test('every request includes Authorization Bearer token header', function () {
     $history = [];
-    $client = makeClient('secret-token', [new Response(200, [], '[]')], $history);
+    $client = makeClient('secret-token', [new Response(200, [], json_encode(['data' => []]))], $history);
 
-    $client->request('GET', '/test');
+    $client->packs();
 
     $sentRequest = $history[0]['request'];
     expect($sentRequest->getHeaderLine('Authorization'))->toBe('Bearer secret-token');
 });
 
-// --- 1.4 JSON response decoded to array ---
+// --- 1.4 JSON response decoded ---
 
-test('200 JSON response is returned as PHP array', function () {
-    $payload = ['id' => 1, 'name' => 'Monkey D. Luffy'];
-    $history = [];
-    $client = makeClient('token', [new Response(200, [], json_encode($payload))], $history);
+test('200 JSON response is decoded and mapped to a resource', function () {
+    $body = json_encode(['data' => ['id' => 'OP01', 'name' => 'Romance Dawn', 'label' => 'OP-01']]);
+    $client = makeClient('token', [new Response(200, [], $body)]);
 
-    $result = $client->request('GET', '/cards/1');
+    $pack = $client->pack('OP01');
 
-    expect($result)->toBe($payload);
+    expect($pack)->toBeInstanceOf(PackResource::class)
+        ->and($pack->name)->toBe('Romance Dawn');
 });
 
-// --- 1.5–1.9 HTTP error status codes → typed exceptions ---
+// --- HTTP error status codes → typed exceptions ---
 
 dataset('exception mapping', [
     'HTTP 401 → AuthenticationException' => [401, AuthenticationException::class],
@@ -80,7 +80,7 @@ dataset('exception mapping', [
 it('maps HTTP error status codes to typed exceptions', function (int $status, string $exception) {
     $client = makeClient('token', [new Response($status)]);
 
-    expect(fn () => $client->request('GET', '/cards'))->toThrow($exception);
+    expect(fn () => $client->packs())->toThrow($exception);
 })->with('exception mapping');
 
 // --- packs endpoints ---
@@ -145,6 +145,30 @@ it('pack() propagates NotFoundException on 404', function () {
 });
 
 // --- cards endpoints ---
+
+it('cards() sends GET to the cards endpoint', function () {
+    $history = [];
+    $body = json_encode(['data' => [], 'meta' => []]);
+    $client = makeClient('token', [new Response(200, [], $body)], $history);
+
+    $client->cards();
+
+    expect((string) $history[0]['request']->getUri())->toContain('cards');
+});
+
+it('card() sends GET to cards/{id}', function () {
+    $history = [];
+    $body = json_encode(['data' => [
+        'id' => 'OP01-001', 'pack_id' => 'OP01', 'card_set' => 'OP-01',
+        'name' => 'Monkey D. Luffy', 'rarity' => 'L', 'category' => 'Character',
+        'colors' => ['Red'], 'attributes' => ['Strike'], 'types' => ['Straw Hat Crew'],
+    ]]);
+    $client = makeClient('token', [new Response(200, [], $body)], $history);
+
+    $client->card('OP01-001');
+
+    expect((string) $history[0]['request']->getUri())->toContain('cards/OP01-001');
+});
 
 it('cards() returns data as CardResource[] and meta', function () {
     $meta = ['current_page' => 1, 'last_page' => 2, 'per_page' => 25, 'total' => 50];
