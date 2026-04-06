@@ -230,3 +230,104 @@ it('card() propagates NotFoundException on 404', function () {
 
     expect(fn () => $client->card('UNKNOWN'))->toThrow(NotFoundException::class);
 });
+
+// allCards() tests
+
+it('allCards() with a single page returns a flat CardResource[]', function () {
+    $body = json_encode([
+        'data' => [[
+            'id' => 'OP01-001', 'pack_id' => 'OP01', 'card_set' => 'OP-01',
+            'name' => 'Monkey D. Luffy', 'rarity' => 'L', 'category' => 'Character',
+            'colors' => ['Red'], 'attributes' => ['Strike'], 'types' => ['Straw Hat Crew'],
+        ]],
+        'meta' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1],
+    ]);
+    $client = makeClient('token', [new Response(200, [], $body)]);
+
+    $result = $client->allCards();
+
+    expect($result)->toHaveCount(1)
+        ->and($result[0])->toBeInstanceOf(CardResource::class)
+        ->and($result[0]->id)->toBe('OP01-001');
+});
+
+it('allCards() with multiple pages merges all pages into one flat array', function () {
+    $page1 = json_encode([
+        'data' => [[
+            'id' => 'OP01-001', 'pack_id' => 'OP01', 'card_set' => 'OP-01',
+            'name' => 'Monkey D. Luffy', 'rarity' => 'L', 'category' => 'Character',
+            'colors' => ['Red'], 'attributes' => ['Strike'], 'types' => ['Straw Hat Crew'],
+        ]],
+        'meta' => ['current_page' => 1, 'last_page' => 2, 'per_page' => 1, 'total' => 2],
+    ]);
+    $page2 = json_encode([
+        'data' => [[
+            'id' => 'OP01-002', 'pack_id' => 'OP01', 'card_set' => 'OP-01',
+            'name' => 'Roronoa Zoro', 'rarity' => 'R', 'category' => 'Character',
+            'colors' => ['Green'], 'attributes' => ['Slash'], 'types' => ['Straw Hat Crew'],
+        ]],
+        'meta' => ['current_page' => 2, 'last_page' => 2, 'per_page' => 1, 'total' => 2],
+    ]);
+    $client = makeClient('token', [new Response(200, [], $page1), new Response(200, [], $page2)]);
+
+    $result = $client->allCards();
+
+    expect($result)->toHaveCount(2)
+        ->and($result[0])->toBeInstanceOf(CardResource::class)
+        ->and($result[0]->id)->toBe('OP01-001')
+        ->and($result[1])->toBeInstanceOf(CardResource::class)
+        ->and($result[1]->id)->toBe('OP01-002');
+});
+
+it('allCards() stops after the last page (current_page === last_page)', function () {
+    $history = [];
+    $page1 = json_encode([
+        'data' => [[
+            'id' => 'OP01-001', 'pack_id' => 'OP01', 'card_set' => 'OP-01',
+            'name' => 'Monkey D. Luffy', 'rarity' => 'L', 'category' => 'Character',
+            'colors' => ['Red'], 'attributes' => ['Strike'], 'types' => ['Straw Hat Crew'],
+        ]],
+        'meta' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1],
+    ]);
+    $client = makeClient('token', [new Response(200, [], $page1)], $history);
+
+    $client->allCards();
+
+    expect($history)->toHaveCount(1);
+});
+
+it('allCards(null) uses a fresh CardFilter with page set per iteration', function () {
+    $history = [];
+    $page1 = json_encode([
+        'data' => [],
+        'meta' => ['current_page' => 1, 'last_page' => 2, 'per_page' => 25, 'total' => 0],
+    ]);
+    $page2 = json_encode([
+        'data' => [],
+        'meta' => ['current_page' => 2, 'last_page' => 2, 'per_page' => 25, 'total' => 0],
+    ]);
+    $client = makeClient('token', [new Response(200, [], $page1), new Response(200, [], $page2)], $history);
+
+    $client->allCards(null);
+
+    expect((string) $history[0]['request']->getUri())->toContain('page=1')
+        ->and((string) $history[1]['request']->getUri())->toContain('page=2');
+});
+
+it('allCards($filter) forwards caller\'s filter constraints on every request', function () {
+    $history = [];
+    $page1 = json_encode([
+        'data' => [],
+        'meta' => ['current_page' => 1, 'last_page' => 2, 'per_page' => 25, 'total' => 0],
+    ]);
+    $page2 = json_encode([
+        'data' => [],
+        'meta' => ['current_page' => 2, 'last_page' => 2, 'per_page' => 25, 'total' => 0],
+    ]);
+    $client = makeClient('token', [new Response(200, [], $page1), new Response(200, [], $page2)], $history);
+
+    $client->allCards((new CardFilter)->pack('OP01'));
+
+    expect((string) $history[0]['request']->getUri())->toContain('pack_id=OP01')
+        ->and((string) $history[1]['request']->getUri())->toContain('pack_id=OP01');
+});

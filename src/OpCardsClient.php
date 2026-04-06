@@ -52,6 +52,23 @@ class OpCardsClient
         ];
     }
 
+    /** @return CardResource[] */
+    public function allCards(?CardFilter $filter = null): array
+    {
+        $filter ??= new CardFilter;
+        $all = [];
+        $page = 1;
+
+        do {
+            $result = $this->cards($filter->page($page));
+            $all = array_merge($all, $result['data']);
+            $meta = $result['meta'];
+            $page++;
+        } while ($meta['current_page'] < $meta['last_page']);
+
+        return $all;
+    }
+
     public function card(string $id): CardResource
     {
         $response = $this->request('GET', "cards/{$id}");
