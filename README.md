@@ -1,10 +1,6 @@
 # op-cards-php
 
-PHP SDK for the [op-cards.ditshej.ch](https://op-cards.ditshej.ch) API — the One Piece TCG card database.
-
-Framework-agnostic core with optional Laravel integration.
-
-> **Note:** Both this SDK and the upstream API are in active development. No stable v1 has been released; breaking changes may occur without notice.
+PHP SDK for the [One Piece TCG card API](https://github.com/ditshej/one-piece-cards-api) — framework-agnostic core with optional Laravel integration.
 
 ---
 
@@ -14,7 +10,7 @@ Framework-agnostic core with optional Laravel integration.
 composer require ditshej/op-cards-php
 ```
 
-Requires PHP 8.1+ and `guzzlehttp/guzzle`.
+Requires PHP 8.4+ and `guzzlehttp/guzzle`.
 
 ---
 
