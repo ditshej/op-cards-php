@@ -8,32 +8,13 @@ use Ditshej\OpCards\Filters\CardFilter;
 use Ditshej\OpCards\OpCardsClient;
 use Ditshej\OpCards\Resources\CardResource;
 use Ditshej\OpCards\Resources\PackResource;
-use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
-
-function makeClient(string $token, array $responses, array &$history = []): OpCardsClient
-{
-    $mock = new MockHandler($responses);
-    $stack = HandlerStack::create($mock);
-    $stack->push(Middleware::history($history));
-
-    $guzzle = new Client(['handler' => $stack]);
-
-    return new OpCardsClient($token, $guzzle);
-}
-
-// --- 1.1 instantiation ---
 
 test('OpCardsClient can be instantiated with a token', function () {
     $client = new OpCardsClient('my-token');
 
     expect($client)->toBeInstanceOf(OpCardsClient::class);
 });
-
-// --- 1.2 custom ClientInterface injection ---
 
 test('custom ClientInterface is used when injected', function () {
     $history = [];
@@ -43,8 +24,6 @@ test('custom ClientInterface is used when injected', function () {
 
     expect($history)->toHaveCount(1);
 });
-
-// --- 1.3 Authorization header ---
 
 test('every request includes Authorization Bearer token header', function () {
     $history = [];
@@ -56,8 +35,6 @@ test('every request includes Authorization Bearer token header', function () {
     expect($sentRequest->getHeaderLine('Authorization'))->toBe('Bearer secret-token');
 });
 
-// --- 1.4 JSON response decoded ---
-
 test('200 JSON response is decoded and mapped to a resource', function () {
     $body = json_encode(['data' => ['id' => 'OP01', 'name' => 'Romance Dawn', 'label' => 'OP-01']]);
     $client = makeClient('token', [new Response(200, [], $body)]);
@@ -67,8 +44,6 @@ test('200 JSON response is decoded and mapped to a resource', function () {
     expect($pack)->toBeInstanceOf(PackResource::class)
         ->and($pack->name)->toBe('Romance Dawn');
 });
-
-// --- HTTP error status codes → typed exceptions ---
 
 dataset('exception mapping', [
     'HTTP 401 → AuthenticationException' => [401, AuthenticationException::class],
@@ -83,8 +58,6 @@ it('maps HTTP error status codes to typed exceptions', function (int $status, st
 
     expect(fn () => $client->packs())->toThrow($exception);
 })->with('exception mapping');
-
-// --- packs endpoints ---
 
 it('packs() sends GET to the packs endpoint', function () {
     $history = [];
@@ -144,8 +117,6 @@ it('pack() propagates NotFoundException on 404', function () {
 
     expect(fn () => $client->pack('UNKNOWN'))->toThrow(NotFoundException::class);
 });
-
-// --- cards endpoints ---
 
 it('cards() sends GET to the cards endpoint', function () {
     $history = [];

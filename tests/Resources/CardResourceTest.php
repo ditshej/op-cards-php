@@ -2,29 +2,6 @@
 
 use Ditshej\OpCards\Resources\CardResource;
 
-function makeCard(array $overrides = []): CardResource
-{
-    $get = fn (string $key, mixed $default) => array_key_exists($key, $overrides) ? $overrides[$key] : $default;
-
-    return new CardResource(
-        id: $get('id', 'OP01-001'),
-        pack_id: $get('pack_id', 'OP01'),
-        card_set: $get('card_set', 'OP-01'),
-        name: $get('name', 'Monkey D. Luffy'),
-        rarity: $get('rarity', 'L'),
-        category: $get('category', 'Character'),
-        colors: $get('colors', ['Red']),
-        cost: $get('cost', 5),
-        power: $get('power', 6000),
-        attributes: $get('attributes', ['Strike']),
-        types: $get('types', ['Straw Hat Crew']),
-        effect: $get('effect', 'Some effect text.'),
-        trigger: $get('trigger', null),
-        img_url: $get('img_url', 'https://example.com/card.jpg'),
-        alt_art_variant: $get('alt_art_variant', null),
-    );
-}
-
 it('stores all required fields', function () {
     $card = makeCard();
 
