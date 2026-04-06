@@ -29,7 +29,7 @@ function makeClient(
     string $token,
     array $responses,
     array &$history = [],
-    string $baseUri = 'https://op-cards.ditshej.ch/api/',
+    string $baseUri = 'https://api.example.com/',
 ): OpCardsClient {
     $mock = new MockHandler($responses);
     $stack = HandlerStack::create($mock);
