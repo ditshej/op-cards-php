@@ -6,6 +6,7 @@ use Ditshej\OpCards\Exceptions\ApiException;
 use Ditshej\OpCards\Exceptions\AuthenticationException;
 use Ditshej\OpCards\Exceptions\NotFoundException;
 use Ditshej\OpCards\Exceptions\RateLimitException;
+use Ditshej\OpCards\Resources\PackResource;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\BadResponseException;
@@ -21,6 +22,21 @@ class OpCardsClient
         $this->http = $http ?? new Client([
             'base_uri' => 'https://op-cards.ditshej.ch/api/',
         ]);
+    }
+
+    /** @return PackResource[] */
+    public function packs(): array
+    {
+        $response = $this->request('GET', 'packs');
+
+        return array_map(PackResource::fromArray(...), $response['data']);
+    }
+
+    public function pack(string $id): PackResource
+    {
+        $response = $this->request('GET', "packs/{$id}");
+
+        return PackResource::fromArray($response['data']);
     }
 
     public function request(string $method, string $path, array $options = []): array

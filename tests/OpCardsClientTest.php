@@ -5,6 +5,7 @@ use Ditshej\OpCards\Exceptions\AuthenticationException;
 use Ditshej\OpCards\Exceptions\NotFoundException;
 use Ditshej\OpCards\Exceptions\RateLimitException;
 use Ditshej\OpCards\OpCardsClient;
+use Ditshej\OpCards\Resources\PackResource;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -80,3 +81,42 @@ it('maps HTTP error status codes to typed exceptions', function (int $status, st
 
     expect(fn () => $client->request('GET', '/cards'))->toThrow($exception);
 })->with('exception mapping');
+
+// --- packs endpoints ---
+
+it('packs() returns an array of PackResource', function () {
+    $body = json_encode(['data' => [
+        ['id' => 'OP01', 'name' => 'Romance Dawn', 'label' => 'OP-01'],
+        ['id' => 'OP02', 'name' => 'Paramount War', 'label' => 'OP-02'],
+    ]]);
+    $client = makeClient('token', [new Response(200, [], $body)]);
+
+    $packs = $client->packs();
+
+    expect($packs)->toHaveCount(2)
+        ->and($packs[0])->toBeInstanceOf(PackResource::class)
+        ->and($packs[0]->id)->toBe('OP01')
+        ->and($packs[1]->id)->toBe('OP02');
+});
+
+it('packs() returns empty array when data is empty', function () {
+    $client = makeClient('token', [new Response(200, [], json_encode(['data' => []]))]);
+
+    expect($client->packs())->toBe([]);
+});
+
+it('pack() returns a single PackResource', function () {
+    $body = json_encode(['data' => ['id' => 'OP01', 'name' => 'Romance Dawn', 'label' => 'OP-01']]);
+    $client = makeClient('token', [new Response(200, [], $body)]);
+
+    $pack = $client->pack('OP01');
+
+    expect($pack)->toBeInstanceOf(PackResource::class)
+        ->and($pack->id)->toBe('OP01');
+});
+
+it('pack() propagates NotFoundException on 404', function () {
+    $client = makeClient('token', [new Response(404)]);
+
+    expect(fn () => $client->pack('UNKNOWN'))->toThrow(NotFoundException::class);
+});
