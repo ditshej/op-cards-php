@@ -24,6 +24,14 @@ Then write `design.md` and `tasks.md` following the same pattern.
 Use `openspec/ROADMAP.md` as the primary source for what each change should do.
 Use `openspec/config.yaml` for project context and rules.
 
+**Commit after propose:**
+```bash
+git add openspec/changes/<change-name>/
+git commit -m "docs(<change-name>): add proposal, design and tasks
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+```
+
 ### Step 2: Apply
 ```bash
 openspec instructions apply --change "<change-name>" --json
@@ -34,6 +42,14 @@ Work through all tasks in `tasks.md`:
 - Run `composer test` after each task to verify nothing breaks
 - If tests fail: fix before moving to the next task
 - If a task is unclear: make a reasonable decision, note it in the task file
+
+**Commit after apply (all tasks done):**
+```bash
+git add src/ tests/
+git commit -m "feat(<change-name>): <short description of what was implemented>
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+```
 
 ### Step 3: Review (parallel subagents)
 
@@ -59,15 +75,24 @@ Return a structured report with critical and minor findings.
 Collect both reports. Fix all **critical** findings. Document **minor** findings.
 Run `composer test` again to confirm everything passes.
 
-### Step 4: Archive + Commit
+**Commit after review (only if changes were made):**
+```bash
+git add src/ tests/
+git commit -m "refactor(<change-name>): apply review feedback
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+```
+Skip this commit if the review produced no changes.
+
+### Step 4: Archive
 ```bash
 openspec archive <change-name>
 ```
 
-Then commit everything:
+**Commit after archive:**
 ```bash
-git add -A
-git commit -m "feat(<change-name>): <short description>
+git add openspec/changes/archive/
+git commit -m "chore(<change-name>): archive change
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ```
@@ -79,7 +104,7 @@ After archiving, output a summary block:
 ```
 ## Change: <change-name>
 Status: ✓ archived
-Commit: <hash>
+Commits: docs · feat · [refactor] · chore
 Files created: <list>
 Review findings: <N> critical fixed, <N> minor noted
 Tests: <N> passed
@@ -125,10 +150,10 @@ After all 7 changes are complete, output a full summary:
 
 ## Changes Implemented
 
-| Change | Status | Commit | Tests |
-|--------|--------|--------|-------|
-| exception-hierarchy    | ✓ | abc1234 | 8 passed |
-| http-client-core       | ✓ | def5678 | 12 passed |
+| Change | Status | Commits | Tests |
+|--------|--------|---------|-------|
+| exception-hierarchy    | ✓ | docs · feat · chore | 8 passed |
+| http-client-core       | ✓ | docs · feat · refactor · chore | 12 passed |
 | card-and-pack-resources| ✓ | ... | ... |
 | list-packs             | ✓ | ... | ... |
 | list-cards             | ✓ | ... | ... |
