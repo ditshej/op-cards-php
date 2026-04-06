@@ -7,18 +7,30 @@ use Illuminate\Support\ServiceProvider;
 
 class OpCardsServiceProvider extends ServiceProvider
 {
+    public function boot(): void
+    {
+        $this->mergeConfigFrom(
+            __DIR__.'/../../config/opcards.php',
+            'opcards',
+        );
+
+        $this->publishes([
+            __DIR__.'/../../config/opcards.php' => config_path('opcards.php'),
+        ], 'opcards-config');
+    }
+
     public function register(): void
     {
         $this->app->singleton(OpCardsClient::class, function () {
-            $baseUri = getenv('OPCARDS_BASE_URI');
+            $token = (string) ($this->app['config']->get('opcards.token') ?? '');
 
-            if ($baseUri === false || $baseUri === '') {
-                throw new \InvalidArgumentException('OPCARDS_BASE_URI environment variable is not set.');
+            if ($token === '') {
+                throw new \InvalidArgumentException('opcards.token config value must not be blank.');
             }
 
             return new OpCardsClient(
-                (string) (getenv('OPCARDS_TOKEN') ?: ''),
-                $baseUri,
+                $token,
+                (string) ($this->app['config']->get('opcards.base_uri') ?? ''),
             );
         });
     }
