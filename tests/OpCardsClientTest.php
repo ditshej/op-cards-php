@@ -22,7 +22,16 @@ test('custom base URI is used for outbound requests', function () {
 
     $client->packs();
 
-    expect((string) $history[0]['request']->getUri())->toContain('custom.example.com');
+    expect((string) $history[0]['request']->getUri())->toStartWith('https://custom.example.com/api/packs');
+});
+
+test('base URI without trailing slash is handled correctly', function () {
+    $history = [];
+    $client = makeClient('token', [new Response(200, [], json_encode(['data' => []]))], $history, 'https://custom.example.com/api');
+
+    $client->packs();
+
+    expect((string) $history[0]['request']->getUri())->toStartWith('https://custom.example.com/api/packs');
 });
 
 test('default base URI is used when none is given', function () {
@@ -31,7 +40,7 @@ test('default base URI is used when none is given', function () {
 
     $client->packs();
 
-    expect((string) $history[0]['request']->getUri())->toContain('op-cards.ditshej.ch');
+    expect((string) $history[0]['request']->getUri())->toStartWith('https://op-cards.ditshej.ch/api/packs');
 });
 
 test('custom ClientInterface is used when injected', function () {
