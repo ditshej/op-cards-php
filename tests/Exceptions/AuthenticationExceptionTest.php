@@ -15,3 +15,9 @@ test('AuthenticationException carries the given message', function () {
 
     expect($exception->getMessage())->toBe($message);
 });
+
+test('getStatusCode() is available on AuthenticationException via ApiException inheritance', function () {
+    $exception = new AuthenticationException('Unauthorized', 401);
+
+    expect($exception->getStatusCode())->toBe(401);
+});

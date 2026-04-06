@@ -15,3 +15,9 @@ test('NotFoundException carries the given message', function () {
 
     expect($exception->getMessage())->toBe($message);
 });
+
+test('getStatusCode() is available on NotFoundException via ApiException inheritance', function () {
+    $exception = new NotFoundException('Not Found', 404);
+
+    expect($exception->getStatusCode())->toBe(404);
+});
