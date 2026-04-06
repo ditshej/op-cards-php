@@ -51,20 +51,14 @@ it('returns the same instance on repeated resolution (singleton)', function () {
     expect($first)->toBe($second);
 });
 
-it('throws InvalidArgumentException when opcards.token is blank', function () {
-    $container = makeContainer(['opcards' => ['token' => '', 'base_uri' => 'https://api.example.com/']]);
+it('throws InvalidArgumentException when opcards.token is blank or null', function (mixed $token) {
+    $container = makeContainer(['opcards' => ['token' => $token, 'base_uri' => 'https://api.example.com/']]);
     $provider = new OpCardsServiceProvider($container);
     $provider->register();
 
     expect(fn () => $container->make(OpCardsClient::class))
         ->toThrow(InvalidArgumentException::class);
-});
-
-it('throws InvalidArgumentException when opcards.token is null', function () {
-    $container = makeContainer(['opcards' => ['token' => null, 'base_uri' => 'https://api.example.com/']]);
-    $provider = new OpCardsServiceProvider($container);
-    $provider->register();
-
-    expect(fn () => $container->make(OpCardsClient::class))
-        ->toThrow(InvalidArgumentException::class);
-});
+})->with([
+    'empty string' => [''],
+    'null' => [null],
+]);

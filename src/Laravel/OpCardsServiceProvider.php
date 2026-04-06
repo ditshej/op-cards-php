@@ -4,6 +4,7 @@ namespace Ditshej\OpCards\Laravel;
 
 use Ditshej\OpCards\OpCardsClient;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 
 class OpCardsServiceProvider extends ServiceProvider
 {
@@ -25,7 +26,7 @@ class OpCardsServiceProvider extends ServiceProvider
             $token = (string) ($this->app['config']->get('opcards.token') ?? '');
 
             if ($token === '') {
-                throw new \InvalidArgumentException('opcards.token config value must not be blank.');
+                throw new InvalidArgumentException('opcards.token config value must not be blank.');
             }
 
             return new OpCardsClient(
