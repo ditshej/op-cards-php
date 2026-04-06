@@ -231,8 +231,6 @@ it('card() propagates NotFoundException on 404', function () {
     expect(fn () => $client->card('UNKNOWN'))->toThrow(NotFoundException::class);
 });
 
-// allCards() tests
-
 it('allCards() with a single page returns a flat CardResource[]', function () {
     $body = json_encode([
         'data' => [[
