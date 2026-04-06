@@ -20,9 +20,13 @@ class CardFilter
         return $this;
     }
 
-    public function cost(int $value): static
+    public function cost(int ...$values): static
     {
-        $this->params['cost'] = $value;
+        if (count($values) === 0) {
+            return $this;
+        }
+
+        $this->params['cost'] = count($values) === 1 ? $values[0] : $values;
 
         return $this;
     }
