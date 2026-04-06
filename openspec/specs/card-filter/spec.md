@@ -35,3 +35,6 @@ TBD - created by archiving change card-filter. Update Purpose after archive.
 - **WHEN** all methods are called in a single chain
 - **THEN** `toQuery()` returns all the corresponding keys
 
+#### Scenario: page() sets the page key
+- **WHEN** `(new CardFilter)->page(2)->toQuery()` is called
+- **THEN** `['page' => 2]` is returned
