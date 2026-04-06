@@ -40,7 +40,9 @@ it('stores all required fields', function () {
         ->and($card->attributes)->toBe(['Strike'])
         ->and($card->types)->toBe(['Straw Hat Crew'])
         ->and($card->effect)->toBe('Some effect text.')
-        ->and($card->img_url)->toBe('https://example.com/card.jpg');
+        ->and($card->trigger)->toBeNull()
+        ->and($card->img_url)->toBe('https://example.com/card.jpg')
+        ->and($card->alt_art_variant)->toBeNull();
 });
 
 it('accepts null for nullable fields', function () {
