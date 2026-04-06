@@ -152,7 +152,11 @@ Note: `git add -A openspec/` is required because the archive moves files
 
 ### Step 5: Merge to main
 
+Rebase the branch onto main first to keep a linear history (no merge commits):
+
 ```bash
+git checkout feat/<change-name>
+git rebase main
 git checkout main
 git merge feat/<change-name>
 git branch -d feat/<change-name>
@@ -191,6 +195,12 @@ Implement in this exact order (each builds on the previous):
 5. `list-cards`
 6. `card-filter`
 7. `laravel-integration`
+8. `exception-getstatuscode`
+9. `pagination-filter`
+10. `laravel-config-integration`
+11. `card-filter-multivalue`  ← depends on #9
+12. `auto-pagination`         ← depends on #9
+13. `add-readme`              ← depends on #8–#12
 
 ---
 
@@ -209,22 +219,28 @@ Implement in this exact order (each builds on the previous):
 
 ## Final Output
 
-After all 7 changes are complete, output a full summary:
+After all 13 changes are complete, output a full summary:
 
 ```
 # Mission Complete
 
 ## Changes Implemented
 
-| Change                  | Status | Branch (deleted)             | Commits                        | Tests      |
-|-------------------------|--------|------------------------------|--------------------------------|------------|
-| exception-hierarchy     | ✓      | feat/exception-hierarchy     | docs · feat · docs             | 8 passed   |
-| http-client-core        | ✓      | feat/http-client-core        | docs · feat · refactor · docs  | 12 passed  |
-| card-and-pack-resources | ✓      | feat/card-and-pack-resources | ...                            | ...        |
-| list-packs              | ✓      | feat/list-packs              | ...                            | ...        |
-| list-cards              | ✓      | feat/list-cards              | ...                            | ...        |
-| card-filter             | ✓      | feat/card-filter             | ...                            | ...        |
-| laravel-integration     | ✓      | feat/laravel-integration     | ...                            | ...        |
+| Change                     | Status | Branch (deleted)                | Commits                        | Tests      |
+|----------------------------|--------|---------------------------------|--------------------------------|------------|
+| exception-hierarchy        | ✓      | feat/exception-hierarchy        | docs · feat · docs             | 8 passed   |
+| http-client-core           | ✓      | feat/http-client-core           | docs · feat · refactor · docs  | 12 passed  |
+| card-and-pack-resources    | ✓      | feat/card-and-pack-resources    | ...                            | ...        |
+| list-packs                 | ✓      | feat/list-packs                 | ...                            | ...        |
+| list-cards                 | ✓      | feat/list-cards                 | ...                            | ...        |
+| card-filter                | ✓      | feat/card-filter                | ...                            | ...        |
+| laravel-integration        | ✓      | feat/laravel-integration        | ...                            | ...        |
+| exception-getstatuscode    | ✓      | feat/exception-getstatuscode    | ...                            | ...        |
+| pagination-filter          | ✓      | feat/pagination-filter          | ...                            | ...        |
+| laravel-config-integration | ✓      | feat/laravel-config-integration | ...                            | ...        |
+| card-filter-multivalue     | ✓      | feat/card-filter-multivalue     | ...                            | ...        |
+| auto-pagination            | ✓      | feat/auto-pagination            | ...                            | ...        |
+| add-readme                 | ✓      | feat/add-readme                 | ...                            | ...        |
 
 ## How to Review
 

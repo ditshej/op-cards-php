@@ -57,3 +57,52 @@ Optional Laravel integration via ServiceProvider and Facade.
 
 - `src/Laravel/OpCardsServiceProvider.php`
 - `src/Laravel/Facades/OpCards.php`
+
+## Change 8: `exception-getstatuscode`
+
+Add `getStatusCode(): int` convenience method to `ApiException`.
+Allows callers to use a semantic method instead of `getCode()`.
+
+- `src/Exceptions/ApiException.php`
+
+## Change 9: `pagination-filter`
+
+Add `page(int $value)` method to `CardFilter` to allow requesting specific pages.
+
+- `src/Filters/CardFilter.php`
+
+## Change 10: `laravel-config-integration`
+
+Replace `getenv()` with Laravel's `config()` system in the ServiceProvider.
+Publish `config/opcards.php` so users can override via Laravel's config pipeline
+(supports `config:cache`, per-environment overrides, `Config::set()` in tests).
+Guards for missing token and base URI are included.
+
+- `src/Laravel/OpCardsServiceProvider.php`
+- `config/opcards.php` (new)
+
+## Change 11: `card-filter-multivalue`
+
+Support multi-value filtering for `cost` and `power` in `CardFilter`.
+Uses variadic syntax: `->cost(3, 5, 7)` sends `cost[]=3&cost[]=5&cost[]=7`.
+Single-value call `->cost(5)` keeps the existing `cost=5` behaviour.
+Depends on Change 9 (`pagination-filter`).
+
+- `src/Filters/CardFilter.php`
+
+## Change 12: `auto-pagination`
+
+Add `allCards(?CardFilter $filter = null): array` to `OpCardsClient`.
+Fetches all pages automatically and returns a flat `CardResource[]`.
+Depends on Change 9 (`pagination-filter`).
+
+- `src/OpCardsClient.php`
+
+## Change 13: `add-readme`
+
+Write `README.md` covering installation, required configuration
+(`OPCARDS_TOKEN`, `OPCARDS_BASE_URI`), standalone usage, Laravel integration,
+available methods, `CardFilter` usage, and the target API version.
+Depends on Changes 8–12 (documents the final state of the SDK).
+
+- `README.md` (new)
