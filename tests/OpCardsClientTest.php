@@ -329,3 +329,16 @@ it('allCards($filter) forwards caller\'s filter constraints on every request', f
     expect((string) $history[0]['request']->getUri())->toContain('pack_id=OP01')
         ->and((string) $history[1]['request']->getUri())->toContain('pack_id=OP01');
 });
+
+it('allCards() does not mutate the caller\'s filter', function () {
+    $body = json_encode([
+        'data' => [],
+        'meta' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 0],
+    ]);
+    $client = makeClient('token', [new Response(200, [], $body)]);
+    $filter = (new CardFilter)->pack('OP01');
+
+    $client->allCards($filter);
+
+    expect($filter->toQuery())->toBe(['pack_id' => 'OP01']);
+});
