@@ -10,10 +10,14 @@ use Ditshej\OpCards\Resources\CardResource;
 use Ditshej\OpCards\Resources\PackResource;
 use GuzzleHttp\Psr7\Response;
 
-test('OpCardsClient can be instantiated with a token', function () {
-    $client = new OpCardsClient('my-token');
+test('OpCardsClient can be instantiated with a token and base URI', function () {
+    $client = new OpCardsClient('my-token', 'https://api.example.com/');
 
     expect($client)->toBeInstanceOf(OpCardsClient::class);
+});
+
+test('omitting base URI throws ArgumentCountError', function () {
+    expect(fn () => new OpCardsClient('my-token'))->toThrow(ArgumentCountError::class);
 });
 
 test('custom base URI is used for outbound requests', function () {
@@ -32,15 +36,6 @@ test('base URI without trailing slash is handled correctly', function () {
     $client->packs();
 
     expect((string) $history[0]['request']->getUri())->toStartWith('https://custom.example.com/api/packs');
-});
-
-test('default base URI is used when none is given', function () {
-    $history = [];
-    $client = makeClient('token', [new Response(200, [], json_encode(['data' => []]))], $history);
-
-    $client->packs();
-
-    expect((string) $history[0]['request']->getUri())->toStartWith('https://op-cards.ditshej.ch/api/packs');
 });
 
 test('custom ClientInterface is used when injected', function () {

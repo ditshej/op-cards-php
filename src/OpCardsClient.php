@@ -19,7 +19,7 @@ class OpCardsClient
 
     public function __construct(
         private readonly string $token,
-        private readonly string $baseUri = 'https://op-cards.ditshej.ch/api/',
+        private readonly string $baseUri,
         ?ClientInterface $http = null,
     ) {
         $this->http = $http ?? new Client;

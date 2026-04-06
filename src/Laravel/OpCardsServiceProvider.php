@@ -11,7 +11,7 @@ class OpCardsServiceProvider extends ServiceProvider
     {
         $this->app->singleton(OpCardsClient::class, fn () => new OpCardsClient(
             (string) (getenv('OPCARDS_TOKEN') ?: ''),
-            (string) (getenv('OPCARDS_BASE_URI') ?: 'https://op-cards.ditshej.ch/api/'),
+            (string) getenv('OPCARDS_BASE_URI'),
         ));
     }
 }
