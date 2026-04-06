@@ -6,6 +6,7 @@ Implement all pending changes in `openspec/ROADMAP.md` for the `op-cards-php` PH
 Work through each change sequentially using the OpenSpec workflow with a review step before archiving.
 
 **Working directory:** `/Users/ditshej/localweb/op-cards-php`
+All commands are run from this directory.
 
 ---
 
@@ -14,15 +15,29 @@ Work through each change sequentially using the OpenSpec workflow with a review 
 For each change in the roadmap (in order), execute these steps:
 
 ### Step 1: Propose
+
+Create the change scaffold and write all planning artifacts:
+
 ```bash
 openspec new change "<change-name>"
-openspec instructions proposal --change "<change-name>" --json
 ```
-Write `openspec/changes/<change-name>/proposal.md` using the template.
-Then write `design.md` and `tasks.md` following the same pattern.
 
-Use `openspec/ROADMAP.md` as the primary source for what each change should do.
+Then fetch instructions and write each artifact in order:
+
+```bash
+openspec instructions proposal --change "<change-name>" --json
+# → write openspec/changes/<change-name>/proposal.md
+
+openspec instructions design --change "<change-name>" --json
+# → write openspec/changes/<change-name>/design.md
+
+openspec instructions tasks --change "<change-name>" --json
+# → write openspec/changes/<change-name>/tasks.md
+```
+
+Use `openspec/ROADMAP.md` as the primary source for scope.
 Use `openspec/config.yaml` for project context and rules.
+Each `instructions` call returns a template — fill it in. Do NOT copy `context` or `rules` blocks into the output files.
 
 **Commit after propose:**
 ```bash
@@ -32,48 +47,64 @@ git commit -m "docs(<change-name>): add proposal, design and tasks
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ```
 
+---
+
 ### Step 2: Apply
+
 ```bash
 openspec instructions apply --change "<change-name>" --json
 ```
+
 Work through all tasks in `tasks.md`:
 - Mark each task `[x]` as you complete it
-- Write tests FIRST for each implementation task
-- Run `composer test` after each task to verify nothing breaks
+- Write tests FIRST for each implementation task (TDD)
+- Run `composer test` after each task — never leave failing tests
 - If tests fail: fix before moving to the next task
 - If a task is unclear: make a reasonable decision, note it in the task file
+- Pause and report back if you hit a blocker you cannot resolve
 
 **Commit after apply (all tasks done):**
 ```bash
-git add src/ tests/
+git add src/ tests/ openspec/changes/<change-name>/tasks.md
 git commit -m "feat(<change-name>): <short description of what was implemented>
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ```
 
+---
+
 ### Step 3: Review (parallel subagents)
 
-After all tasks are complete, spawn **two review agents in parallel** using the Agent tool:
+Spawn **two review agents in parallel** using the Agent tool.
 
-**Agent A** — Code quality review:
+**Important:** The apply commit is already done. Tell agents to inspect `HEAD` (not `git diff`).
+
+**Agent A** — Code quality + formatting:
 ```
-Use the php-library-reviewer agent to review all recently modified files in
-/Users/ditshej/localweb/op-cards-php for this change: <change-name>.
-Check code quality, PHP standards, and pint formatting.
+You are reviewing the change "<change-name>" in /Users/ditshej/localweb/op-cards-php.
+Use the php-library-reviewer agent.
+The implementation was just committed — use `git show --name-only HEAD` to find
+the modified files, then read and review each one.
+Check: PHP standards, constructor promotion, typed properties, no else, no framework
+imports in src/ root, pint formatting.
+Fix all critical findings directly. Run composer test after fixes.
 Return a structured report with critical and minor findings.
 ```
 
-**Agent B** — Test coverage review:
+**Agent B** — Test coverage + quality:
 ```
-Review the test files recently added or modified in
-/Users/ditshej/localweb/op-cards-php for change: <change-name>.
-Check: Does every new class in src/ have a corresponding test?
-Are assertions specific and meaningful? Are datasets used for repetitive cases?
+You are reviewing the tests for change "<change-name>" in /Users/ditshej/localweb/op-cards-php.
+The implementation was just committed — use `git show --name-only HEAD` to find
+modified files in src/ and their corresponding test files in tests/.
+Check: Does every new class in src/ have a corresponding test? Are assertions
+specific and meaningful (expect()->toBe() not assertTrue)? Are datasets used
+for repetitive cases? Does ArchTest.php need updating for new structural rules?
+Fix all critical findings directly. Run composer test after fixes.
 Return a structured report with critical and minor findings.
 ```
 
 Collect both reports. Fix all **critical** findings. Document **minor** findings.
-Run `composer test` again to confirm everything passes.
+Run `composer test` one final time to confirm everything passes.
 
 **Commit after review (only if changes were made):**
 ```bash
@@ -82,20 +113,30 @@ git commit -m "refactor(<change-name>): apply review feedback
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ```
-Skip this commit if the review produced no changes.
+Skip this commit entirely if the review produced zero changes.
+
+---
 
 ### Step 4: Archive
+
 ```bash
-openspec archive <change-name>
+openspec archive <change-name> --yes
 ```
+
+The `--yes` flag skips confirmation prompts.
 
 **Commit after archive:**
 ```bash
-git add openspec/changes/archive/
-git commit -m "chore(<change-name>): archive change
+git add -A openspec/
+git commit -m "docs(<change-name>): archive change
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ```
+
+Note: `git add -A openspec/` is required because the archive moves files
+(deletion from `changes/` + creation in `changes/archive/`).
+
+---
 
 ### Step 5: Report
 
@@ -104,7 +145,7 @@ After archiving, output a summary block:
 ```
 ## Change: <change-name>
 Status: ✓ archived
-Commits: docs · feat · [refactor] · chore
+Commits: docs · feat · [refactor] · docs
 Files created: <list>
 Review findings: <N> critical fixed, <N> minor noted
 Tests: <N> passed
@@ -113,6 +154,8 @@ Tests: <N> passed
 ---
 
 ## Change Sequence
+
+Check `git log --oneline` first — if some changes are already archived, skip them.
 
 Implement in this exact order (each builds on the previous):
 
@@ -123,8 +166,6 @@ Implement in this exact order (each builds on the previous):
 5. `list-cards`
 6. `card-filter`
 7. `laravel-integration`
-
-Check `git log --oneline` first — if some changes are already archived, skip them.
 
 ---
 
@@ -150,20 +191,20 @@ After all 7 changes are complete, output a full summary:
 
 ## Changes Implemented
 
-| Change | Status | Commits | Tests |
-|--------|--------|---------|-------|
-| exception-hierarchy    | ✓ | docs · feat · chore | 8 passed |
-| http-client-core       | ✓ | docs · feat · refactor · chore | 12 passed |
-| card-and-pack-resources| ✓ | ... | ... |
-| list-packs             | ✓ | ... | ... |
-| list-cards             | ✓ | ... | ... |
-| card-filter            | ✓ | ... | ... |
-| laravel-integration    | ✓ | ... | ... |
+| Change                  | Status | Commits                        | Tests      |
+|-------------------------|--------|--------------------------------|------------|
+| exception-hierarchy     | ✓      | docs · feat · docs             | 8 passed   |
+| http-client-core        | ✓      | docs · feat · refactor · docs  | 12 passed  |
+| card-and-pack-resources | ✓      | ...                            | ...        |
+| list-packs              | ✓      | ...                            | ...        |
+| list-cards              | ✓      | ...                            | ...        |
+| card-filter             | ✓      | ...                            | ...        |
+| laravel-integration     | ✓      | ...                            | ...        |
 
 ## How to Review
 
-Run all tests:         composer test
-Check formatting:      vendor/bin/pint --dirty
-Browse archived changes: openspec/changes/archive/
-View git history:      git log --oneline
+Run all tests:            composer test
+Check formatting:         vendor/bin/pint --dirty
+Browse archived changes:  openspec/changes/archive/
+View git history:         git log --oneline
 ```
