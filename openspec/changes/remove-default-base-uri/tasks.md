@@ -7,5 +7,5 @@
 
 ## 2. Implementation
 
-- [ ] 2.1 Remove default from `$baseUri` in `src/OpCardsClient.php`
-- [ ] 2.2 Remove hardcoded fallback URI from `src/Laravel/OpCardsServiceProvider.php`
+- [x] 2.1 Remove default from `$baseUri` in `src/OpCardsClient.php`
+- [x] 2.2 Remove hardcoded fallback URI from `src/Laravel/OpCardsServiceProvider.php`
