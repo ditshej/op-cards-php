@@ -55,7 +55,7 @@ class OpCardsClient
     /** @return CardResource[] */
     public function allCards(?CardFilter $filter = null): array
     {
-        $filter ??= new CardFilter;
+        $filter = clone ($filter ?? new CardFilter);
         $all = [];
         $page = 1;
 
