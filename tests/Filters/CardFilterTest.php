@@ -18,6 +18,7 @@ dataset('single-value methods', [
     'keyword' => [fn (CardFilter $f) => $f->keyword('Slash'),  ['keyword' => 'Slash']],
     'cardSet' => [fn (CardFilter $f) => $f->cardSet('OP-01'),  ['card_set' => 'OP-01']],
     'perPage' => [fn (CardFilter $f) => $f->perPage(50),       ['per_page' => 50]],
+    'page' => [fn (CardFilter $f) => $f->page(2),          ['page' => 2]],
 ]);
 
 it('single method sets the correct query key', function (Closure $apply, array $expected) {
@@ -55,4 +56,17 @@ it('multiple methods chain and produce all set keys', function () {
         ->toQuery();
 
     expect($query)->toBe(['color' => 'Red', 'rarity' => 'L', 'pack_id' => 'OP01']);
+});
+
+it('page() sets the page key', function () {
+    expect((new CardFilter)->page(2)->toQuery())->toBe(['page' => 2]);
+});
+
+it('page() is chainable with other filter methods', function () {
+    $query = (new CardFilter)
+        ->color('Red')
+        ->page(3)
+        ->toQuery();
+
+    expect($query)->toBe(['color' => 'Red', 'page' => 3]);
 });

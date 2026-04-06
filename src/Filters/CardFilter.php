@@ -106,6 +106,13 @@ class CardFilter
         return $this;
     }
 
+    public function page(int $value): static
+    {
+        $this->params['page'] = $value;
+
+        return $this;
+    }
+
     public function toQuery(): array
     {
         return $this->params;
