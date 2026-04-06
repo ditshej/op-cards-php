@@ -6,6 +6,7 @@ use Ditshej\OpCards\Exceptions\ApiException;
 use Ditshej\OpCards\Exceptions\AuthenticationException;
 use Ditshej\OpCards\Exceptions\NotFoundException;
 use Ditshej\OpCards\Exceptions\RateLimitException;
+use Ditshej\OpCards\Filters\CardFilter;
 use Ditshej\OpCards\Resources\CardResource;
 use Ditshej\OpCards\Resources\PackResource;
 use GuzzleHttp\Client;
@@ -41,9 +42,9 @@ class OpCardsClient
     }
 
     /** @return array{data: CardResource[], meta: array} */
-    public function cards(?array $query = null): array
+    public function cards(?CardFilter $filter = null): array
     {
-        $options = $query ? ['query' => $query] : [];
+        $options = $filter ? ['query' => $filter->toQuery()] : [];
         $response = $this->request('GET', 'cards', $options);
 
         return [

@@ -4,6 +4,7 @@ use Ditshej\OpCards\Exceptions\ApiException;
 use Ditshej\OpCards\Exceptions\AuthenticationException;
 use Ditshej\OpCards\Exceptions\NotFoundException;
 use Ditshej\OpCards\Exceptions\RateLimitException;
+use Ditshej\OpCards\Filters\CardFilter;
 use Ditshej\OpCards\OpCardsClient;
 use Ditshej\OpCards\Resources\CardResource;
 use Ditshej\OpCards\Resources\PackResource;
@@ -197,12 +198,12 @@ it('cards() returns empty data array when API returns none', function () {
     expect($client->cards()['data'])->toBe([]);
 });
 
-it('cards() forwards query parameters to the request', function () {
+it('cards() forwards CardFilter query parameters to the request', function () {
     $history = [];
     $body = json_encode(['data' => [], 'meta' => []]);
     $client = makeClient('token', [new Response(200, [], $body)], $history);
 
-    $client->cards(['pack_id' => 'OP01']);
+    $client->cards((new CardFilter)->pack('OP01'));
 
     expect((string) $history[0]['request']->getUri())->toContain('pack_id=OP01');
 });
