@@ -28,39 +28,53 @@ src/
 
 ## OpenSpec Workflow
 
-**Rule:** Every new feature or major change ALWAYS starts with `/opsx:propose` — never implement directly.
+**Rule:** Every new feature or major change ALWAYS starts with `/opsx:propose` — never implement directly, not even in plan mode. Implementation with `/opsx:apply` may only begin after the propose commit.
 
 Every OpenSpec change gets its own feature branch. No squash merge — the full history stays on `main`.
+
+> **Autonomous mode (AGENT_MISSION):** When working through a full roadmap autonomously, per-change CHECKPOINTs are skipped. Instead, after the session is complete, the agent must produce a mandatory stop — presenting a full summary of all changes and optionally opening a GitHub PR for review.
 
 ### Workflow per Change
 
 ```bash
+# 0. Explore (optional)
+# /opsx:explore — investigate ideas and requirements before proposing
+# → CHECKPOINT: Present findings to user → wait for OK before proposing
+
 # 1. Create branch
 git checkout -b feat/<change-name>
 
-# 2. Propose the change (generates proposal, specs, design, tasks)
-/opsx:propose
+# 2. Propose
+openspec new change "<change-name>"
+# /opsx:propose — create proposal.md, specs/, design.md, tasks.md
 # → Commit: "docs(<change-name>): add proposal, design and tasks"
+# → CHECKPOINT: Present proposal summary → wait for OK before implementing
 
-# 3. Implement (TDD — tests first)
-/opsx:apply
-# → Commit(s): "feat(<change-name>): ...", "fix(<change-name>): ...", etc.
+# 3. Implementation (TDD)
+# /opsx:apply — work through tasks
+# → Commit(s): "feat(<change-name>): ...", "test(<change-name>): ...", etc.
 
-# 4. Verify — checks Completeness, Correctness, Coherence against specs
-/opsx:verify
+# 4. Verify
+# /opsx:verify — checks Completeness, Correctness, Coherence against specs
 # → Fix all CRITICALs before proceeding
 
-# 5. Code Review
-# Run php-library-reviewer agent, fix findings
-# → Commit: "refactor(<change-name>): apply review feedback"
+# 5. AI Review
+# php-library-reviewer Agent — automated review (spawn parallel subagents)
+# → Fix critical findings, commit: "refactor(<change-name>): apply review feedback"
+# → CHECKPOINT: Present change summary:
+#     - What changed (architecture, new/modified files)
+#     - Test results (N passed)
+#     - How to review manually (git diff, which endpoints/methods to test)
+#   → Wait for user OK before archiving
 
-# 6. Archive the change
-/opsx:archive
+# 6. Archiving
+# /opsx:archive — close change, merge specs
 # → Commit: "docs(<change-name>): archive change"
 
-# 7. Rebase onto main, then merge (no squash)
-git rebase main
-git checkout main && git merge feat/<change-name>
+# 7. Merge to main (no squash!)
+git checkout main
+git merge feat/<change-name>
+git branch -d feat/<change-name>
 ```
 
 Use the change name as the commit scope for every commit on that branch.

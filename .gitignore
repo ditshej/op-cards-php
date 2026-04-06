@@ -12,3 +12,5 @@ Thumbs.db
 /.zed
 /.phpactor.json
 .claude/settings.local.json
+.claude/worktrees/
+.env.deploy
