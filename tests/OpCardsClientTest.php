@@ -84,6 +84,18 @@ it('maps HTTP error status codes to typed exceptions', function (int $status, st
 
 // --- packs endpoints ---
 
+it('packs() sends GET to the packs endpoint', function () {
+    $history = [];
+    $body = json_encode(['data' => [
+        ['id' => 'OP01', 'name' => 'Romance Dawn', 'label' => 'OP-01'],
+    ]]);
+    $client = makeClient('token', [new Response(200, [], $body)], $history);
+
+    $client->packs();
+
+    expect((string) $history[0]['request']->getUri())->toContain('packs');
+});
+
 it('packs() returns an array of PackResource', function () {
     $body = json_encode(['data' => [
         ['id' => 'OP01', 'name' => 'Romance Dawn', 'label' => 'OP-01'],
@@ -103,6 +115,16 @@ it('packs() returns empty array when data is empty', function () {
     $client = makeClient('token', [new Response(200, [], json_encode(['data' => []]))]);
 
     expect($client->packs())->toBe([]);
+});
+
+it('pack() sends GET to packs/{id}', function () {
+    $history = [];
+    $body = json_encode(['data' => ['id' => 'OP01', 'name' => 'Romance Dawn', 'label' => 'OP-01']]);
+    $client = makeClient('token', [new Response(200, [], $body)], $history);
+
+    $client->pack('OP01');
+
+    expect((string) $history[0]['request']->getUri())->toContain('packs/OP01');
 });
 
 it('pack() returns a single PackResource', function () {
