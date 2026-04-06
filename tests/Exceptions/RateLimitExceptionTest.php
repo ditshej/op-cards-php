@@ -15,3 +15,9 @@ test('RateLimitException carries the given message', function () {
 
     expect($exception->getMessage())->toBe($message);
 });
+
+test('getStatusCode() is available on RateLimitException via ApiException inheritance', function () {
+    $exception = new RateLimitException('Too Many Requests', 429);
+
+    expect($exception->getStatusCode())->toBe(429);
+});

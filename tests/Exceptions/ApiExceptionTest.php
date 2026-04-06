@@ -21,3 +21,9 @@ test('ApiException accepts a previous throwable', function () {
 
     expect($exception->getPrevious())->toBe($previous);
 });
+
+test('getStatusCode() returns the HTTP status code passed to ApiException', function () {
+    $exception = new ApiException('Not Found', 404);
+
+    expect($exception->getStatusCode())->toBe(404);
+});
