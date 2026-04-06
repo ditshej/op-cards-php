@@ -65,42 +65,18 @@ test('200 JSON response is returned as PHP array', function () {
     expect($result)->toBe($payload);
 });
 
-// --- 1.5 401 → AuthenticationException ---
+// --- 1.5–1.9 HTTP error status codes → typed exceptions ---
 
-test('401 response throws AuthenticationException', function () {
-    $client = makeClient('bad-token', [new Response(401)]);
+dataset('exception mapping', [
+    'HTTP 401 → AuthenticationException' => [401, AuthenticationException::class],
+    'HTTP 404 → NotFoundException' => [404, NotFoundException::class],
+    'HTTP 429 → RateLimitException' => [429, RateLimitException::class],
+    'HTTP 500 → ApiException' => [500, ApiException::class],
+    'HTTP 422 → ApiException' => [422, ApiException::class],
+]);
 
-    expect(fn () => $client->request('GET', '/cards'))->toThrow(AuthenticationException::class);
-});
+it('maps HTTP error status codes to typed exceptions', function (int $status, string $exception) {
+    $client = makeClient('token', [new Response($status)]);
 
-// --- 1.6 404 → NotFoundException ---
-
-test('404 response throws NotFoundException', function () {
-    $client = makeClient('token', [new Response(404)]);
-
-    expect(fn () => $client->request('GET', '/cards/missing'))->toThrow(NotFoundException::class);
-});
-
-// --- 1.7 429 → RateLimitException ---
-
-test('429 response throws RateLimitException', function () {
-    $client = makeClient('token', [new Response(429)]);
-
-    expect(fn () => $client->request('GET', '/cards'))->toThrow(RateLimitException::class);
-});
-
-// --- 1.8 500 → ApiException ---
-
-test('500 response throws ApiException', function () {
-    $client = makeClient('token', [new Response(500)]);
-
-    expect(fn () => $client->request('GET', '/cards'))->toThrow(ApiException::class);
-});
-
-// --- 1.9 422 → ApiException ---
-
-test('422 response throws ApiException', function () {
-    $client = makeClient('token', [new Response(422)]);
-
-    expect(fn () => $client->request('GET', '/cards'))->toThrow(ApiException::class);
-});
+    expect(fn () => $client->request('GET', '/cards'))->toThrow($exception);
+})->with('exception mapping');
