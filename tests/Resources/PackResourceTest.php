@@ -15,3 +15,11 @@ it('has readonly properties', function () {
 
     expect(fn () => $pack->id = 'OP02')->toThrow(Error::class);
 });
+
+it('can be hydrated from a raw array', function () {
+    $pack = PackResource::fromArray(['id' => 'OP01', 'name' => 'Romance Dawn', 'label' => 'OP-01']);
+
+    expect($pack->id)->toBe('OP01')
+        ->and($pack->name)->toBe('Romance Dawn')
+        ->and($pack->label)->toBe('OP-01');
+});

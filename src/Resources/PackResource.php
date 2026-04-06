@@ -9,4 +9,13 @@ readonly class PackResource
         public string $name,
         public string $label,
     ) {}
+
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            id: $data['id'],
+            name: $data['name'],
+            label: $data['label'],
+        );
+    }
 }
