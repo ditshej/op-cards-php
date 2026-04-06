@@ -14,6 +14,17 @@ All commands are run from this directory.
 
 For each change in the roadmap (in order), execute these steps:
 
+### Step 0: Branch
+
+```bash
+git checkout main
+git checkout -b feat/<change-name>
+```
+
+All commits for this change (propose, apply, review, archive) go on this branch.
+
+---
+
 ### Step 1: Propose
 
 Create the change scaffold and write all planning artifacts:
@@ -77,14 +88,15 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 
 Spawn **two review agents in parallel** using the Agent tool.
 
-**Important:** The apply commit is already done. Tell agents to inspect `HEAD` (not `git diff`).
+The reviewer agents use the branch diff to see all code changes cleanly:
+`git diff main..HEAD -- src/ tests/`
 
 **Agent A** — Code quality + formatting:
 ```
 You are reviewing the change "<change-name>" in /Users/ditshej/localweb/op-cards-php.
 Use the php-library-reviewer agent.
-The implementation was just committed — use `git show --name-only HEAD` to find
-the modified files, then read and review each one.
+Run `git diff main..HEAD --name-only -- src/ tests/` to find all modified files
+in this branch, then read and review each one.
 Check: PHP standards, constructor promotion, typed properties, no else, no framework
 imports in src/ root, pint formatting.
 Fix all critical findings directly. Run composer test after fixes.
@@ -94,8 +106,8 @@ Return a structured report with critical and minor findings.
 **Agent B** — Test coverage + quality:
 ```
 You are reviewing the tests for change "<change-name>" in /Users/ditshej/localweb/op-cards-php.
-The implementation was just committed — use `git show --name-only HEAD` to find
-modified files in src/ and their corresponding test files in tests/.
+Run `git diff main..HEAD --name-only -- src/ tests/` to find all modified files
+in this branch.
 Check: Does every new class in src/ have a corresponding test? Are assertions
 specific and meaningful (expect()->toBe() not assertTrue)? Are datasets used
 for repetitive cases? Does ArchTest.php need updating for new structural rules?
@@ -138,13 +150,26 @@ Note: `git add -A openspec/` is required because the archive moves files
 
 ---
 
-### Step 5: Report
+### Step 5: Merge to main
 
-After archiving, output a summary block:
+```bash
+git checkout main
+git merge feat/<change-name>
+git branch -d feat/<change-name>
+```
+
+No squash. Full history stays on main.
+
+---
+
+### Step 6: Report
+
+After merging, output a summary block:
 
 ```
 ## Change: <change-name>
-Status: ✓ archived
+Status: ✓ merged to main
+Branch: feat/<change-name> (deleted)
 Commits: docs · feat · [refactor] · docs
 Files created: <list>
 Review findings: <N> critical fixed, <N> minor noted
@@ -155,7 +180,7 @@ Tests: <N> passed
 
 ## Change Sequence
 
-Check `git log --oneline` first — if some changes are already archived, skip them.
+Check `git log --oneline` first — if some changes are already merged to main, skip them.
 
 Implement in this exact order (each builds on the previous):
 
@@ -191,15 +216,15 @@ After all 7 changes are complete, output a full summary:
 
 ## Changes Implemented
 
-| Change                  | Status | Commits                        | Tests      |
-|-------------------------|--------|--------------------------------|------------|
-| exception-hierarchy     | ✓      | docs · feat · docs             | 8 passed   |
-| http-client-core        | ✓      | docs · feat · refactor · docs  | 12 passed  |
-| card-and-pack-resources | ✓      | ...                            | ...        |
-| list-packs              | ✓      | ...                            | ...        |
-| list-cards              | ✓      | ...                            | ...        |
-| card-filter             | ✓      | ...                            | ...        |
-| laravel-integration     | ✓      | ...                            | ...        |
+| Change                  | Status | Branch (deleted)             | Commits                        | Tests      |
+|-------------------------|--------|------------------------------|--------------------------------|------------|
+| exception-hierarchy     | ✓      | feat/exception-hierarchy     | docs · feat · docs             | 8 passed   |
+| http-client-core        | ✓      | feat/http-client-core        | docs · feat · refactor · docs  | 12 passed  |
+| card-and-pack-resources | ✓      | feat/card-and-pack-resources | ...                            | ...        |
+| list-packs              | ✓      | feat/list-packs              | ...                            | ...        |
+| list-cards              | ✓      | feat/list-cards              | ...                            | ...        |
+| card-filter             | ✓      | feat/card-filter             | ...                            | ...        |
+| laravel-integration     | ✓      | feat/laravel-integration     | ...                            | ...        |
 
 ## How to Review
 
