@@ -1,5 +1,7 @@
 # op-cards-php
 
+![CI](https://github.com/ditshej/op-cards-php/actions/workflows/ci.yml/badge.svg)
+
 PHP SDK for the [One Piece TCG card API](https://github.com/ditshej/one-piece-cards-api) — framework-agnostic core with optional Laravel integration.
 
 ---
