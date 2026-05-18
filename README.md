@@ -34,7 +34,7 @@ The client requires two values:
 | Variable | Description |
 |---|---|
 | `OPCARDS_TOKEN` | Bearer token issued by your API instance |
-| `OPCARDS_BASE_URI` | Base URL of your API instance, e.g. `https://op-cards.ditshej.ch/api/` *(maintainer's instance — replace with yours)* |
+| `OPCARDS_BASE_URI` | Base URL of your API instance, e.g. `https://op-cards.ditshej.ch/api/v1/` *(maintainer's instance — replace with yours)* |
 
 ---
 
@@ -59,7 +59,7 @@ Add the credentials to your `.env`:
 
 ```env
 OPCARDS_TOKEN=your-token
-OPCARDS_BASE_URI=https://op-cards.ditshej.ch/api/  # maintainer's instance — replace with yours
+OPCARDS_BASE_URI=https://op-cards.ditshej.ch/api/v1/  # maintainer's instance — replace with yours
 ```
 
 Optionally publish the config file:

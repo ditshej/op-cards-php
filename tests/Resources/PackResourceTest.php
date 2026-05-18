@@ -23,3 +23,9 @@ it('can be hydrated from a raw array', function () {
         ->and($pack->name)->toBe('Romance Dawn')
         ->and($pack->label)->toBe('OP-01');
 });
+
+it('accepts null label', function () {
+    $pack = PackResource::fromArray(['id' => '569901', 'name' => 'Promotion card', 'label' => null]);
+
+    expect($pack->label)->toBeNull();
+});

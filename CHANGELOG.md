@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-05-18
+
 ### Features
 - **exception-hierarchy:** Add typed exception hierarchy for API errors
 - **http-client-core:** Add authenticated HTTP client with exception mapping
