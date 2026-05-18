@@ -1,6 +1,8 @@
 # op-cards-php
 
 ![CI](https://github.com/ditshej/op-cards-php/actions/workflows/ci.yml/badge.svg)
+[![Packagist Version](https://img.shields.io/packagist/v/ditshej/op-cards-php)](https://packagist.org/packages/ditshej/op-cards-php)
+[![License](https://img.shields.io/packagist/l/ditshej/op-cards-php)](LICENSE)
 
 PHP client library for [one-piece-cards-api](https://github.com/ditshej/one-piece-cards-api) — a self-hostable HTTP API serving One Piece TCG card data. Use this package to talk to **your own** instance of that API from any PHP application. Framework-agnostic core with optional Laravel integration.
 
