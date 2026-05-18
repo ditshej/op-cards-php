@@ -2,7 +2,18 @@
 
 ![CI](https://github.com/ditshej/op-cards-php/actions/workflows/ci.yml/badge.svg)
 
-PHP SDK for the [One Piece TCG card API](https://github.com/ditshej/one-piece-cards-api) — framework-agnostic core with optional Laravel integration.
+PHP client library for [one-piece-cards-api](https://github.com/ditshej/one-piece-cards-api) — a self-hostable HTTP API serving One Piece TCG card data. Use this package to talk to **your own** instance of that API from any PHP application. Framework-agnostic core with optional Laravel integration.
+
+---
+
+## How it works
+
+This SDK does not call any shared or public service. You bring your own backend:
+
+1. Install and host [one-piece-cards-api](https://github.com/ditshej/one-piece-cards-api) on a server you control. It exposes the HTTP endpoints (`/packs`, `/cards`, …) and issues bearer tokens.
+2. Install this package in your PHP project and point it at your instance's base URL and token.
+
+> **Note:** `op-cards.ditshej.ch` is the maintainer's private instance and is not a public API. Replace it with your own host in the examples below.
 
 ---
 
@@ -22,8 +33,8 @@ The client requires two values:
 
 | Variable | Description |
 |---|---|
-| `OPCARDS_TOKEN` | Bearer token for API authentication |
-| `OPCARDS_BASE_URI` | Base URL of the API, e.g. `https://op-cards.ditshej.ch/api/` |
+| `OPCARDS_TOKEN` | Bearer token issued by your API instance |
+| `OPCARDS_BASE_URI` | Base URL of your API instance, e.g. `https://op-cards.ditshej.ch/api/` *(maintainer's instance — replace with yours)* |
 
 ---
 
@@ -48,7 +59,7 @@ Add the credentials to your `.env`:
 
 ```env
 OPCARDS_TOKEN=your-token
-OPCARDS_BASE_URI=https://op-cards.ditshej.ch/api/
+OPCARDS_BASE_URI=https://op-cards.ditshej.ch/api/  # maintainer's instance — replace with yours
 ```
 
 Optionally publish the config file:
