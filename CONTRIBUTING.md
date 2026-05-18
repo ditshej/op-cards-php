@@ -9,8 +9,16 @@ This project uses [OpenSpec](https://github.com/fission-ai/openspec) for structu
 ### Required Tools
 
 - PHP 8.2+, Composer
-- [OpenSpec CLI](https://github.com/fission-ai/openspec): `npm install -g @fission-ai/openspec`
+- Node.js 18+ (the OpenSpec CLI is installed locally via `npm install`)
 - [Claude Code](https://claude.ai/code) (recommended — skills are pre-configured in `.claude/`)
+
+### One-time Setup
+
+```bash
+composer setup
+```
+
+This installs PHP dependencies, the OpenSpec CLI, and activates the pre-commit hook. The OpenSpec CLI (`@fission-ai/openspec`) is pinned in `package.json` and lives in `node_modules/.bin/`. The project's skills invoke it via `npx openspec` — no global installation needed.
 
 ### Feature Branch Convention
 
