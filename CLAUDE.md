@@ -107,11 +107,7 @@ Run tests: `composer test`
 - Every class in `src/` needs a corresponding test in `tests/`
 - Pre-commit hook blocks commits when tests fail
 
-Activate hook once with:
-
-```bash
-git config core.hooksPath .githooks
-```
+`composer install` sets `core.hooksPath` to `.githooks/base`. The test hook lives in `.githooks/project/pre-commit/run-tests`.
 
 ## Pint (Code Formatter)
 
@@ -122,3 +118,14 @@ vendor/bin/pint --dirty
 ```
 
 Or via composer: `composer lint`
+
+## Static Analysis
+
+PHPStan level 10 on `src/` (`composer analyse`). Existing errors are in `phpstan-baseline.neon`.
+
+## Enforcement
+
+- Hooks and CI come from the rig-enforcement skill (base version 5). Do not edit `.claude/settings.json`, `.claude/hooks/base/`, `.githooks/base/` or `docs/ai-review/base.md`; project rules go into the `project/` folders and `docs/ai-review/project.md`.
+- Releases are tags `vX.Y.Z` (semantic versioning). Before tagging, run the AI review from the rig-enforcement skill; the hook blocks the tag without `Status: pass`.
+- PHP only: `@phpstan-ignore` only with the error identifier and a reason.
+- PHP only: PHPStan baseline: never add entries. If an existing entry no longer matches after a code change (`ignore.unmatched`), fix the error in the code and delete the entry. Only if that is too much work for the change, update the entry's text to the same error.

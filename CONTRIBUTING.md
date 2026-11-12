@@ -89,8 +89,8 @@ Multiple commits per phase are fine — commit as often as makes sense.
 Tests are written **before** implementation. A pre-commit hook enforces this — commits are blocked when tests fail.
 
 ```bash
-# Activate the hook once
-git config core.hooksPath .githooks
+# The hooks (core.hooksPath .githooks/base) are set by composer install
+composer install
 
 # Run all tests
 composer test
