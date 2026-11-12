@@ -1,60 +1,107 @@
+# rig-enforcement base 5 (CI template for PHP without Laravel)
 name: CI
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  tests:
-    name: Tests
+  quality:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          coverage: none
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
+          coverage: pcov
+          tools: composer:v2
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - uses: actions/setup-node@v5
+        if: hashFiles('package-lock.json') != ''
         with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
-
-      - name: Run tests
-        run: vendor/bin/pest
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          coverage: none
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
-
-      - name: Check code style
+          node-version: 22
+          cache: npm
+      - name: Install npm packages
+        if: hashFiles('package-lock.json') != ''
+        run: npm ci
+      - name: Pint
         run: vendor/bin/pint --test
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - name: Prettier (when installed)
+        run: if [ -x node_modules/.bin/prettier ]; then node_modules/.bin/prettier --check .; fi
+      - name: Pest with coverage
+        run: vendor/bin/pest --coverage --min=70
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Lockfiles
+        run: |
+          status=0
+          if [ -f composer.json ] && [ ! -f composer.lock ]; then
+            echo "::error file=composer.json::composer.json without composer.lock. Commit the lockfile."
+            status=1
+          fi
+          if [ -f package.json ] && [ ! -f package-lock.json ]; then
+            echo "::error file=package.json::package.json without package-lock.json. Commit the lockfile."
+            status=1
+          fi
+          exit $status
+      - uses: shivammathur/setup-php@v2
+        if: (success() || failure()) && hashFiles('composer.lock') != ''
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+      - name: composer audit
+        if: (success() || failure()) && hashFiles('composer.lock') != ''
+        run: composer audit --locked
+      - name: npm audit
+        if: (success() || failure()) && hashFiles('package-lock.json') != ''
+        run: npm audit --audit-level=high
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false
+
+  claude-md:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: CLAUDE.md length (warning only)
+        run: |
+          # With Laravel Boost the project part lives in .ai/guidelines/project.md.
+          if [ -f .ai/guidelines/project.md ]; then
+            lines=$(wc -l < .ai/guidelines/project.md)
+          elif [ -d .ai/guidelines ]; then
+            lines=$(cat .ai/guidelines/*.md 2>/dev/null | wc -l)
+          elif [ -f CLAUDE.md ]; then
+            lines=$(wc -l < CLAUDE.md)
+            # Follow @imports one level deep (files in the repository only).
+            for f in $(grep -oE '(^|[[:space:]])@[^[:space:]]+' CLAUDE.md | sed 's/^[[:space:]]*@//' | sort -u); do
+              case "$f" in /*|~*|*..*) continue ;; esac
+              if [ -f "$f" ]; then
+                lines=$((lines + $(wc -l < "$f")))
+              fi
+            done
+          else
+            exit 0
+          fi
+          if [ "$lines" -gt 60 ]; then
+            echo "::warning file=CLAUDE.md::The project part of CLAUDE.md has $lines lines (guide: about 60)."
+          fi
