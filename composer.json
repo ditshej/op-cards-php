@@ -13,7 +13,8 @@
         "illuminate/container": "^10.0|^11.0|^12.0",
         "illuminate/support": "^10.0|^11.0|^12.0",
         "laravel/pint": "^1.29",
-        "pestphp/pest": "^4.0"
+        "pestphp/pest": "^4.0",
+        "phpstan/phpstan": "^2.3"
     },
     "suggest": {
         "illuminate/support": "Required to use the Laravel ServiceProvider and Facade (^10.0|^11.0|^12.0)"
@@ -31,10 +32,16 @@
     "scripts": {
         "test": "vendor/bin/pest --compact",
         "lint": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse --no-progress --memory-limit=1G",
+        "post-install-cmd": [
+            "@php -r \"if (file_exists('.git')) { exec('git config core.hooksPath .githooks/base'); }\""
+        ],
+        "post-update-cmd": [
+            "@php -r \"if (file_exists('.git')) { exec('git config core.hooksPath .githooks/base'); }\""
+        ],
         "setup": [
             "@composer install",
-            "npm install",
-            "git config core.hooksPath .githooks"
+            "npm install"
         ]
     },
     "config": {
