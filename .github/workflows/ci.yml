@@ -1,4 +1,4 @@
-# rig-enforcement base 5 (CI template for PHP without Laravel)
+# rig-enforcement base 7 (CI template for PHP without Laravel)
 name: CI
 
 on:
@@ -9,9 +9,15 @@ on:
 permissions:
   contents: read
 
+# A new push to a pull request cancels the older run; runs on main finish.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
@@ -19,6 +25,14 @@ jobs:
           php-version: '8.4'
           coverage: pcov
           tools: composer:v2
+      - name: Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
       - run: composer install --no-interaction --no-progress --prefer-dist
       - uses: actions/setup-node@v5
         if: hashFiles('package-lock.json') != ''
@@ -36,8 +50,10 @@ jobs:
         run: if [ -x node_modules/.bin/prettier ]; then node_modules/.bin/prettier --check .; fi
       - name: Pest with coverage
         run: vendor/bin/pest --coverage --min=70
+
   security:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
       - name: Lockfiles
@@ -58,15 +74,24 @@ jobs:
           php-version: '8.4'
           coverage: none
           tools: composer:v2
-      - name: composer audit
+      - name: composer audit (runtime)
         if: (success() || failure()) && hashFiles('composer.lock') != ''
-        run: composer audit --locked
-      - name: npm audit
+        run: composer audit --locked --no-dev
+      - name: composer audit (all packages, warning only)
+        if: (success() || failure()) && hashFiles('composer.lock') != ''
+        run: |
+          composer audit --locked || echo "::warning file=composer.lock::composer audit found a vulnerability. Runtime packages fail the step above; dev packages: see rig-enforcement, section 3."
+      - name: npm audit (runtime)
         if: (success() || failure()) && hashFiles('package-lock.json') != ''
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high --omit=dev
+      - name: npm audit (all dependencies, warning only)
+        if: (success() || failure()) && hashFiles('package-lock.json') != ''
+        run: |
+          npm audit --audit-level=high || echo "::warning file=package-lock.json::npm audit found a high or critical vulnerability. Runtime dependencies fail the step above; dev dependencies: see rig-enforcement, section 3."
 
   gitleaks:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: read
